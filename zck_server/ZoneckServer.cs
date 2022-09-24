@@ -74,10 +74,10 @@ namespace sck_server
         static void appServer_NewSessionConnected(AppSession session)
         {
             // envois son adresse personne à la personne connecté pour qu'elle puisse l'enregistrer dans une variable (client)
-            session.Send("[Server-connexion] as " + session.SessionID);
+            session.Send("[server-connexion] as " + session.SessionID);
 
             // debug log
-            Console.WriteLine("[Server-connexion] as " + session.SessionID);
+            Console.WriteLine("[server-connexion] as " + session.SessionID);
 
             // ajoute la connexion à la liste des personnes connectées au serveur
             usersConnected.Add(new User(session.SessionID));
