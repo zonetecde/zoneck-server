@@ -1,20 +1,21 @@
 ﻿using SuperSocket.SocketBase;
 using SuperSocket.SocketBase.Config;
 using SuperSocket.SocketBase.Protocol;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace zoneck_server
+namespace sck_server
 {
-    public class Server
+    public class ZoneckServer
     {
-        static AppServer zoneck_server { get; set; }
-        static string IP { get; set; } = "127.0.0.1";
-        static int Port { get; set; } = 30_000;
+        static AppServer Server { get; set; }
 
         private static List<User> usersConnected = new List<User>();
 
-        static void Main(string[] args)
+        public ZoneckServer(string IP = "127.0.0.1", int Port = 30000)
         {
-            zoneck_server = new AppServer();
+            Server = new AppServer();
 
             var m_Config = new ServerConfig
             {
@@ -26,7 +27,7 @@ namespace zoneck_server
             };
 
             // essaye de setup le serveur
-            if (!zoneck_server.Setup(m_Config))//Setup with listening port
+            if (!Server.Setup(m_Config))//Setup with listening port
             {
                 Console.WriteLine("Failed to setup!");
                 Console.ReadKey();
@@ -34,7 +35,7 @@ namespace zoneck_server
             }
 
             // essaye de start le serveur
-            if (!zoneck_server.Start())
+            if (!Server.Start())
             {
                 Console.WriteLine("Failed to start!");
                 Console.ReadKey();
@@ -42,15 +43,15 @@ namespace zoneck_server
             }
 
             // server start
-            Console.WriteLine("The server started successfully, press key'q' to stop it! \nIp : " + zoneck_server.Config.Ip + "\nPort : " + zoneck_server.Config.Port); ;
+            Console.WriteLine("The Server started successfully, press key'q' to stop it! \nIp : " + Server.Config.Ip + "\nPort : " + Server.Config.Port); ;
 
             //      event
             // nouvelle personne connectée
-            zoneck_server.NewSessionConnected += new SessionHandler<AppSession>(appServer_NewSessionConnected);
+            Server.NewSessionConnected += new SessionHandler<AppSession>(appServer_NewSessionConnected);
             // personne déconnectée
-            zoneck_server.SessionClosed += appServer_NewSessionClosed;
+            Server.SessionClosed += appServer_NewSessionClosed;
             // message reçu d'une personne
-            zoneck_server.NewRequestReceived += new RequestHandler<AppSession, StringRequestInfo>(appServer_NewRequestReceived);
+            Server.NewRequestReceived += new RequestHandler<AppSession, StringRequestInfo>(appServer_NewRequestReceived);
 
             // pour quitter le serveur
             while (Console.ReadKey().KeyChar != 'q')
@@ -60,9 +61,9 @@ namespace zoneck_server
             }
 
             // serveur stoppé
-            zoneck_server.Stop();
+            Server.Stop();
 
-            Console.WriteLine("The server was stopped!");
+            Console.WriteLine("The Server was stopped!");
             Console.ReadKey();
         }
 
@@ -73,10 +74,10 @@ namespace zoneck_server
         static void appServer_NewSessionConnected(AppSession session)
         {
             // envois son adresse personne à la personne connecté pour qu'elle puisse l'enregistrer dans une variable (client)
-            session.Send("[server-connexion] as " + session.SessionID);
+            session.Send("[Server-connexion] as " + session.SessionID);
 
             // debug log
-            Console.WriteLine("[server-connexion] as " + session.SessionID);
+            Console.WriteLine("[Server-connexion] as " + session.SessionID);
 
             // ajoute la connexion à la liste des personnes connectées au serveur
             usersConnected.Add(new User(session.SessionID));
@@ -93,12 +94,12 @@ namespace zoneck_server
             string disconnectionMessage = session.SessionID + " %disconnection%";
 
             // Pour chaque session sur le serveur
-            foreach (var u in zoneck_server.GetAllSessions())
+            foreach (var u in Server.GetAllSessions())
             {
                 // si ce n'est pas la personne déconnecté
                 if (u.SessionID != session.SessionID)
                     // si il appartient à la même App
-                    if(usersConnected.FirstOrDefault(x => x.userID == session.SessionID).userApp ==
+                    if (usersConnected.FirstOrDefault(x => x.userID == session.SessionID).userApp ==
                         usersConnected.FirstOrDefault(x => x.userID == u.SessionID).userApp)
                         // le prévient que x s'est déconnecté
                         u.Send(disconnectionMessage);
@@ -137,7 +138,7 @@ namespace zoneck_server
                 // on récupère le nom de l'application
                 string appName = message.Substring(
                     0,
-                    message.IndexOf("]") + 1);             
+                    message.IndexOf("]") + 1);
 
                 // on attribue le nom de l'application à l'utilisateur qui s'est connecté
                 usersConnected.FirstOrDefault(x => x.userID == session.SessionID).userApp = appName;
@@ -146,10 +147,10 @@ namespace zoneck_server
                 // 3 car [0APP]1 2id
                 message = message.Remove(0, appName.Length + 3);
             }
-            else if(message.Contains("%last_message%")) // si c'est une demande de %last_message% de tous les users
+            else if (message.Contains("%last_message%")) // si c'est une demande de %last_message% de tous les users
             {
                 // Pour chaque utilisateur sur le serveur
-                foreach (var u in zoneck_server.GetAllSessions().ToList())
+                foreach (var u in Server.GetAllSessions().ToList())
                 {
                     // Si il appartient à la même App et que ce n'est pas l'envoyeur
                     if (u.SessionID != session.SessionID)
@@ -163,7 +164,7 @@ namespace zoneck_server
             }
 
             // Si c'est un message normal - ou de connexion - on l’envoi à tous les users de la même app
-            foreach (var u in zoneck_server.GetAllSessions().ToList())
+            foreach (var u in Server.GetAllSessions().ToList())
             {
                 if (u.SessionID != session.SessionID)
                     if (usersConnected.FirstOrDefault(x => x.userID == session.SessionID).userApp ==

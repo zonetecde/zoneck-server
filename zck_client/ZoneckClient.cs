@@ -1,17 +1,19 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
-namespace zoneck_client
+namespace zck_client
 {
-    public class zoneck_client
+    public class ZoneckClient
     {
         private Socket SocketClient { get; set; }
         internal static string ConnetionId { get; set; }
         public string AppName { get; }
         internal Action<Message> Receive { get; }
 
-        internal zoneck_client(string appName, string ip, int port, Action<Message> Receive)
+        internal ZoneckClient(string appName, string ip, int port, Action<Message> Receive)
         {
             // Créer une instance du SocketClient
             SocketClient = new Socket(SocketType.Stream, ProtocolType.Tcp);
@@ -58,7 +60,7 @@ namespace zoneck_client
                 // Si le message n'est pas vide
                 if (!String.IsNullOrEmpty(message))
                 {
-                    
+
                     // Si c'est pour informer de son Id de session et informer ensuite le serveur que nous sommes de l'App (nouvelle connexion)
                     if (message.Contains("[server-connexion]"))
                     {
@@ -86,7 +88,7 @@ namespace zoneck_client
                         );
                     }
                     // Si le message est une information d'une déconnexion au serveur
-                    else if (message.Contains(" %disconnection%")) 
+                    else if (message.Contains(" %disconnection%"))
                     {
                         Receive(
                         new Message(message.Substring(0, message.IndexOf(" %disconnection%", StringComparison.Ordinal)), String.Empty, AppName
@@ -94,7 +96,7 @@ namespace zoneck_client
                         );
                     }
                     // Si c'est un message normal
-                    else if (message.Contains(" > ")) 
+                    else if (message.Contains(" > "))
                     {
                         Receive(
                             new Message(message.Substring(0, message.IndexOf(" > ", StringComparison.Ordinal)), // [id] > message
@@ -103,7 +105,7 @@ namespace zoneck_client
                                     , MESSAGE_TYPE.MESSAGE)
                             );
                     }
-                    
+
                 }
             }
         }

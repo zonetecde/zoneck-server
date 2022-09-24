@@ -3,14 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "zoneck server", "zoneck server\zoneck server.csproj", "{25EB6AE6-ED4E-4B7E-969B-0F4DFF40302A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "zoneck client", "zoneck client\zoneck client.csproj", "{5D63FA2A-F7E5-4F75-9F8C-55EB22DB3D53}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E37067DF-2955-4A89-8592-4E13E5098CEC}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quick Local Server", "Quick Local Server\Quick Local Server.csproj", "{84E7EF2B-A009-4F89-9F30-A0628741701F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zck_server", "zck_server\zck_server.csproj", "{66A04F51-ACC6-4DA7-BDD6-C43E6A6654ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zck_client", "zck_client\zck_client.csproj", "{8F29DB71-07F3-4945-BED1-D9666024E00C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,14 +20,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{25EB6AE6-ED4E-4B7E-969B-0F4DFF40302A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{25EB6AE6-ED4E-4B7E-969B-0F4DFF40302A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{25EB6AE6-ED4E-4B7E-969B-0F4DFF40302A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{25EB6AE6-ED4E-4B7E-969B-0F4DFF40302A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5D63FA2A-F7E5-4F75-9F8C-55EB22DB3D53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5D63FA2A-F7E5-4F75-9F8C-55EB22DB3D53}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5D63FA2A-F7E5-4F75-9F8C-55EB22DB3D53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5D63FA2A-F7E5-4F75-9F8C-55EB22DB3D53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84E7EF2B-A009-4F89-9F30-A0628741701F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84E7EF2B-A009-4F89-9F30-A0628741701F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84E7EF2B-A009-4F89-9F30-A0628741701F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84E7EF2B-A009-4F89-9F30-A0628741701F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66A04F51-ACC6-4DA7-BDD6-C43E6A6654ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66A04F51-ACC6-4DA7-BDD6-C43E6A6654ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66A04F51-ACC6-4DA7-BDD6-C43E6A6654ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66A04F51-ACC6-4DA7-BDD6-C43E6A6654ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F29DB71-07F3-4945-BED1-D9666024E00C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F29DB71-07F3-4945-BED1-D9666024E00C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F29DB71-07F3-4945-BED1-D9666024E00C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F29DB71-07F3-4945-BED1-D9666024E00C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
