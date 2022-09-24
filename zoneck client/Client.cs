@@ -13,19 +13,20 @@ namespace zoneck_client
 
         internal zoneck_client(string appName, string ip, int port, Action<Message> Receive)
         {
-            //Create an instance
+            // Créer une instance du SocketClient
             SocketClient = new Socket(SocketType.Stream, ProtocolType.Tcp);
             IPAddress _ip = IPAddress.Parse(ip);
             IPEndPoint point = new IPEndPoint(_ip, port);
-            //Make connection
+
+            // Connexion
             SocketClient.Connect(point);
 
-            //Receive messages from the server continuously
+            // Thread pour recevoir les messages du serveur en continu
             Thread thread = new Thread(_Receive);
             thread.IsBackground = true;
             thread.Start();
 
-            // le nom de l'application qui précède les messages [APP] id > message 
+            // Le nom de l'application qui précède le message de connexion
             AppName = "[" + appName + "]";
 
             this.Receive = Receive;
@@ -37,69 +38,72 @@ namespace zoneck_client
         /// <param name="str">Le message à envoyer</param>
         internal void Send(string str)
         {
-            // [APP NAME] id > message 
-            var buffter = Encoding.UTF8.GetBytes(AppName + " " + ConnetionId + " > " + str + "\r\n");
+            // id > message 
+            var buffter = Encoding.UTF8.GetBytes(ConnetionId + " > " + str + "\r\n");
             var temp = SocketClient.Send(buffter);
         }
 
+        /// <summary>
+        /// Reçois un message du serveur
+        /// </summary>
         private void _Receive()
         {
             while (true)
             {
-                //Get the message sent
+                // Recupère le message reçu
                 byte[] buffer = new byte[1024 * 1024 * 2];
                 var effective = SocketClient.Receive(buffer);
+                var message = Encoding.UTF8.GetString(buffer, 0, effective);
 
-
-                var str = Encoding.UTF8.GetString(buffer, 0, effective);
-
-                if (!String.IsNullOrEmpty(str))
+                // Si le message n'est pas vide
+                if (!String.IsNullOrEmpty(message))
                 {
-                    if (str.Contains(AppName) || str.Contains("[server-connexion]")) // [server-connexion] est uniquement envoyé à la personne qui s'est connecté 
+                    
+                    // Si c'est pour informer de son Id de session et informer ensuite le serveur que nous sommes de l'App (nouvelle connexion)
+                    if (message.Contains("[server-connexion]"))
                     {
-                        if (!str.Contains("[server-connexion]"))
-                            str = str.Remove(0, (AppName).Length + 1); // On sait que le message vient de l'application là
+                        ConnetionId = message.Substring(message.IndexOf("[server-connexion] as ") + "[server-connexion] as ".Length).Replace("\r\n", string.Empty);
 
-                        if (str.Contains(" %last_message%")) // si c'est un last message
-                        {
-                            Receive(
-                            new Message(str.Substring(0, str.IndexOf(" %last_message%", StringComparison.Ordinal)), String.Empty,
-                            AppName
-                            , MESSAGE_TYPE.LAST_MESSAGE)
-                            );
-                        }
-                        else if (str.Contains(" %connection%")) // si c'est une connexion
-                        {
-                            Receive(
-                            new Message(str.Substring(0, str.IndexOf(" %connection%", StringComparison.Ordinal)), String.Empty,
-                            AppName
-                            , MESSAGE_TYPE.CONNECTION)
-                            );
-                        }
-                        else if (str.Contains(" %disconnection%")) // si c'est une deconnexion 
-                        {
-                            Receive(
-                            new Message(str.Substring(0, str.IndexOf(" %disconnection%", StringComparison.Ordinal)), String.Empty, AppName
-        , MESSAGE_TYPE.DISCONNECTION)
-                            );
-                        }
-                        else if (str.Contains(" > ")) // si c'est un message
-                        {
-                            Receive(
-                                new Message(str.Substring(0, str.IndexOf(" > ", StringComparison.Ordinal)), // [id] > message
-                                str.Substring(str.IndexOf(" > ") + " > ".Length) // id > [message]
-                                    .Replace("\r\n", string.Empty), AppName
-        , MESSAGE_TYPE.MESSAGE)
-                                );
-                        }
-                        else // si c'est pour informer de son id de session et informer ensuite le serveur que nous sommes de l'app
-                        {
-                            ConnetionId = str.Substring(str.IndexOf("[server-connexion] as ") + "[server-connexion] as ".Length).Replace("\r\n", string.Empty);
-
-                            var buffter = Encoding.UTF8.GetBytes(AppName + " " + ConnetionId + " %connection%" + "\r\n");
-                            var temp = SocketClient.Send(buffter);
-                        }
+                        var buffter = Encoding.UTF8.GetBytes(AppName + " " + ConnetionId + " %connection%" + "\r\n");
+                        var temp = SocketClient.Send(buffter);
                     }
+                    // Si le message est une réponse à une demande de %last_message% 
+                    else if (message.Contains(" %last_message%")) // si c'est un last message
+                    {
+                        Receive(
+                        new Message(message.Substring(0, message.IndexOf(" %last_message%", StringComparison.Ordinal)), String.Empty,
+                        AppName
+                        , MESSAGE_TYPE.LAST_MESSAGE)
+                        );
+                    }
+                    // Si le message est une information d'une nouvelle connexion
+                    else if (message.Contains(" %connection%"))
+                    {
+                        Receive(
+                        new Message(message.Substring(0, message.IndexOf(" %connection%", StringComparison.Ordinal)), String.Empty,
+                        AppName
+                        , MESSAGE_TYPE.CONNECTION)
+                        );
+                    }
+                    // Si le message est une information d'une déconnexion au serveur
+                    else if (message.Contains(" %disconnection%")) 
+                    {
+                        Receive(
+                        new Message(message.Substring(0, message.IndexOf(" %disconnection%", StringComparison.Ordinal)), String.Empty, AppName
+                            , MESSAGE_TYPE.DISCONNECTION)
+                        );
+                    }
+                    // Si c'est un message normal
+                    else if (message.Contains(" > ")) 
+                    {
+                        Receive(
+                            new Message(message.Substring(0, message.IndexOf(" > ", StringComparison.Ordinal)), // [id] > message
+                            message.Substring(message.IndexOf(" > ") + " > ".Length) // id > [message]
+                                .Replace("\r\n", string.Empty), AppName
+                                    , MESSAGE_TYPE.MESSAGE)
+                            );
+                    }
+                    
                 }
             }
         }

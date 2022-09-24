@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SuperSocket" Version="1.6.6.1" />
     <PackageReference Include="SuperSocket.Engine" Version="1.6.6.1" />
   </ItemGroup>
