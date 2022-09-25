@@ -14,6 +14,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zck_server", "zck_server\zc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zck_client", "zck_client\zck_client.csproj", "{8F29DB71-07F3-4945-BED1-D9666024E00C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "ClassLibrary\ClassLibrary.csproj", "{8C484037-9DE2-4284-A977-EE8C232BE4DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server_test", "server_test\server_test.csproj", "{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +36,14 @@ Global
 		{8F29DB71-07F3-4945-BED1-D9666024E00C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F29DB71-07F3-4945-BED1-D9666024E00C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F29DB71-07F3-4945-BED1-D9666024E00C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C484037-9DE2-4284-A977-EE8C232BE4DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C484037-9DE2-4284-A977-EE8C232BE4DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C484037-9DE2-4284-A977-EE8C232BE4DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C484037-9DE2-4284-A977-EE8C232BE4DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

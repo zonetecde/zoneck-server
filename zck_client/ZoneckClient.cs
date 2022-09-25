@@ -1,8 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using ClassLibrary;
+using static ClassLibrary.ClassLibrary;
 
 namespace zck_client
 {
@@ -29,7 +33,7 @@ namespace zck_client
             thread.Start();
 
             // Le nom de l'application qui précède le message de connexion
-            AppName = "[" + appName + "]";
+            AppName = appName;
 
             this.Receive = Receive;
         }
@@ -41,7 +45,11 @@ namespace zck_client
         internal void Send(string str)
         {
             // id > message 
-            var buffter = Encoding.UTF8.GetBytes(ConnetionId + " > " + str + "\r\n");
+            string msg = JsonConvert.SerializeObject(new Message(ConnetionId, str, AppName, MESSAGE_TYPE.MESSAGE)) + "\r\n";
+            //Receive(new Message(ConnetionId, str, AppName, MESSAGE_TYPE.MESSAGE));
+
+
+            var buffter = Encoding.UTF8.GetBytes(msg);
             var temp = SocketClient.Send(buffter);
         }
 
@@ -55,84 +63,36 @@ namespace zck_client
                 // Recupère le message reçu
                 byte[] buffer = new byte[1024 * 1024 * 2];
                 var effective = SocketClient.Receive(buffer);
+
                 var message = Encoding.UTF8.GetString(buffer, 0, effective);
 
-                // Si le message n'est pas vide
                 if (!String.IsNullOrEmpty(message))
                 {
+                    Message received_message = JsonConvert.DeserializeObject<Message>(message);
 
                     // Si c'est pour informer de son Id de session et informer ensuite le serveur que nous sommes de l'App (nouvelle connexion)
-                    if (message.Contains("[server-connexion]"))
+                    if (received_message.MessageType == MESSAGE_TYPE.CONNECTION)
                     {
-                        ConnetionId = message.Substring(message.IndexOf("[server-connexion] as ") + "[server-connexion] as ".Length).Replace("\r\n", string.Empty);
+                        ConnetionId = received_message.Id;
 
-                        var buffter = Encoding.UTF8.GetBytes(AppName + " " + ConnetionId + " %connection%" + "\r\n");
+                        // Renvois le nom de l'appName en échange
+                        Message msg = new Message(ConnetionId, string.Empty, AppName, MESSAGE_TYPE.APP_NAME_INFORMATION);
+                        var buffter = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(msg) + "\r\n");
                         var temp = SocketClient.Send(buffter);
                     }
                     // Si le message est une réponse à une demande de %last_message% 
-                    else if (message.Contains(" %last_message%")) // si c'est un last message
+                    else if (received_message.MessageType == MESSAGE_TYPE.LAST_MESSAGE) // si c'est un last message
                     {
-                        Receive(
-                        new Message(message.Substring(0, message.IndexOf(" %last_message%", StringComparison.Ordinal)), String.Empty,
-                        AppName
-                        , MESSAGE_TYPE.LAST_MESSAGE)
-                        );
-                    }
-                    // Si le message est une information d'une nouvelle connexion
-                    else if (message.Contains(" %connection%"))
-                    {
-                        Receive(
-                        new Message(message.Substring(0, message.IndexOf(" %connection%", StringComparison.Ordinal)), String.Empty,
-                        AppName
-                        , MESSAGE_TYPE.CONNECTION)
-                        );
-                    }
-                    // Si le message est une information d'une déconnexion au serveur
-                    else if (message.Contains(" %disconnection%"))
-                    {
-                        Receive(
-                        new Message(message.Substring(0, message.IndexOf(" %disconnection%", StringComparison.Ordinal)), String.Empty, AppName
-                            , MESSAGE_TYPE.DISCONNECTION)
-                        );
-                    }
-                    // Si c'est un message normal
-                    else if (message.Contains(" > "))
-                    {
-                        Receive(
-                            new Message(message.Substring(0, message.IndexOf(" > ", StringComparison.Ordinal)), // [id] > message
-                            message.Substring(message.IndexOf(" > ") + " > ".Length) // id > [message]
-                                .Replace("\r\n", string.Empty), AppName
-                                    , MESSAGE_TYPE.MESSAGE)
-                            );
-                    }
+                        List<LastMessage> lastMessages = JsonConvert.DeserializeObject<List<LastMessage>>(received_message.Content);
 
+                        Receive(
+                        new Message(string.Empty, string.Empty, string.Empty, MESSAGE_TYPE.LAST_MESSAGE) { LastMessages = lastMessages }
+                        );
+                    }
+                    else
+                        Receive(received_message);
                 }
             }
         }
-    }
-
-    internal class Message
-    {
-        public Message(string id, string content, string appName, MESSAGE_TYPE messageType)
-        {
-            Id = id;
-            Content = content;
-            MessageType = messageType;
-            AppName = appName;
-        }
-
-        internal string Id { get; set; }
-        internal string Content { get; set; }
-        internal string AppName { get; set; }
-
-        internal MESSAGE_TYPE MessageType { get; set; }
-    }
-
-    internal enum MESSAGE_TYPE
-    {
-        MESSAGE,
-        CONNECTION,
-        DISCONNECTION,
-        LAST_MESSAGE
     }
 }
