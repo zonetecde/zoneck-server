@@ -25,6 +25,7 @@ namespace server_test
         static AppServer Server { get; set; }
 
         private static List<User> usersConnected = new List<User>();
+        private static bool enableDebug = false;
 
         public ZoneckServer(string IP = "127.0.0.1", int Port = 30000)
         {
@@ -66,7 +67,11 @@ namespace server_test
             // message reçu d'une personne
             Server.NewRequestReceived += new RequestHandler<AppSession, StringRequestInfo>(appServer_NewRequestReceived);
 
-            // pour quitter le serveur
+            Console.WriteLine("Debug? Y/N");
+            if (Console.ReadLine() == "Y")
+                enableDebug = true;
+
+            // pour quitter le serveur ou activer debug
             while (Console.ReadKey().KeyChar != 'q')
             {
                 Console.WriteLine();
@@ -91,7 +96,8 @@ namespace server_test
             session.Send(JsonConvert.SerializeObject(message_connection_as));
 
             // debug log
-            Console.WriteLine("[server-connexion] as " + session.SessionID);
+            if (enableDebug)
+                Console.WriteLine("[server-connexion] as " + session.SessionID);
 
             // ajoute la connexion à la liste des personnes connectées au serveur
             usersConnected.Add(new User(session.SessionID));
@@ -123,13 +129,15 @@ namespace server_test
 
             // debug log
             string disconnectionMessage = session.SessionID + " %disconnection%";
-            Console.WriteLine(DateTime.Now.ToString() + " - " + disconnectionMessage);
+            if (enableDebug)
+                Console.WriteLine(DateTime.Now.ToString() + " - " + disconnectionMessage);
 
             // enlève la personne de la liste des users connectés au serveur
             usersConnected.RemoveAll(x => x.userID == session.SessionID);
 
             // debug log : nombre de personne connectée sur le serveur
-            Console.WriteLine("utilisateur connecté au serveur " + usersConnected.Count);
+            if (enableDebug)
+                Console.WriteLine("utilisateur connecté au serveur " + usersConnected.Count);
         }
 
         /// <summary>
@@ -144,7 +152,8 @@ namespace server_test
             Message received_message = JsonConvert.DeserializeObject<Message>(message_brute);
 
             // debug log
-            Console.WriteLine(DateTime.Now.ToString() + " - " + received_message.Id + " > " + received_message.Content);
+            if (enableDebug)
+                Console.WriteLine(DateTime.Now.ToString() + " - " + received_message.Id + " > " + received_message.Content);
 
             // si c'est un message de connexion
             if (received_message.MessageType == MESSAGE_TYPE.APP_NAME_INFORMATION)
