@@ -17,7 +17,7 @@ namespace zck_client
         public string AppName { get; }
         internal Action<Message> Receive { get; }
 
-        internal ZoneckClient(string appName, string ip, int port, Action<Message> Receive)
+        public ZoneckClient(string appName, string ip, int port, Action<Message> Receive)
         {
             // Créer une instance du SocketClient
             SocketClient = new Socket(SocketType.Stream, ProtocolType.Tcp);
