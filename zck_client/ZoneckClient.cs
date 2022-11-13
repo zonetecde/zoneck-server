@@ -13,7 +13,7 @@ namespace zck_client
     public class ZoneckClient
     {
         private Socket SocketClient { get; set; }
-        internal static string ConnetionId { get; set; }
+        public string MyId { get; set; }
         public string AppName { get; }
         internal Action<Message> Receive { get; }
 
@@ -45,7 +45,7 @@ namespace zck_client
         public void Send(string str, string toId = "")
         {
             // id > message 
-            string msg = JsonConvert.SerializeObject(new Message(ConnetionId, str, AppName, MESSAGE_TYPE.MESSAGE, toId)) + "\r\n";
+            string msg = JsonConvert.SerializeObject(new Message(MyId, str, AppName, MESSAGE_TYPE.MESSAGE, toId)) + "\r\n";
             //Receive(new Message(ConnetionId, str, AppName, MESSAGE_TYPE.MESSAGE));
 
             var buffter = Encoding.UTF8.GetBytes(msg);
@@ -72,10 +72,10 @@ namespace zck_client
                     // Si c'est pour informer de son Id de session et informer ensuite le serveur que nous sommes de l'App (nouvelle connexion)
                     if (received_message.MessageType == MESSAGE_TYPE.CONNECTION)
                     {
-                        ConnetionId = received_message.Id;
+                        MyId = received_message.Id;
 
                         // Renvois le nom de l'appName en échange
-                        Message msg = new Message(ConnetionId, string.Empty, AppName, MESSAGE_TYPE.APP_NAME_INFORMATION);
+                        Message msg = new Message(MyId, string.Empty, AppName, MESSAGE_TYPE.APP_NAME_INFORMATION);
                         var buffter = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(msg) + "\r\n");
                         var temp = SocketClient.Send(buffter);
                     }
