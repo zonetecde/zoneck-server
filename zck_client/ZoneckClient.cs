@@ -42,12 +42,11 @@ namespace zck_client
         /// Envois un message au serveur
         /// </summary>
         /// <param name="str">Le message à envoyer</param>
-        internal void Send(string str)
+        public void Send(string str, string toId = "")
         {
             // id > message 
-            string msg = JsonConvert.SerializeObject(new Message(ConnetionId, str, AppName, MESSAGE_TYPE.MESSAGE)) + "\r\n";
+            string msg = JsonConvert.SerializeObject(new Message(ConnetionId, str, AppName, MESSAGE_TYPE.MESSAGE, toId)) + "\r\n";
             //Receive(new Message(ConnetionId, str, AppName, MESSAGE_TYPE.MESSAGE));
-
 
             var buffter = Encoding.UTF8.GetBytes(msg);
             var temp = SocketClient.Send(buffter);
