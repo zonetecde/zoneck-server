@@ -2,4 +2,5 @@
 Serveur et client de mes logiciels
 
 Serveur / Client TCP de mes logiciels
-Communique via des objets messages
+
+Communique via des messages
