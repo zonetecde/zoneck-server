@@ -98,8 +98,6 @@ namespace sck_server
                     // debug log
                     if (enableDebug)
                         Console.WriteLine("Envois à " + u.SessionID + " que " + session.SessionID + " s'est connecté.");
-
-                    Console.WriteLine("INFO CONNECTER ENVOYER à " + u.SessionID);
                 }
             }
         }
@@ -175,11 +173,13 @@ namespace sck_server
             {
                 if (Server.GetSessionByID(received_message.ToId).TrySend(message_brute))
                 {
+                    if(enableDebug)
                     Console.WriteLine("[MESSAGE PRIVE] de " + received_message.Id + " à " + received_message.ToId);
                 }
                 else
                 {
-                    Console.WriteLine("pas envoyé, erreur!");
+                    if (enableDebug)
+                        Console.WriteLine("pas envoyé, erreur!");
                 }
             }
                      
