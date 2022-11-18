@@ -35,21 +35,18 @@ namespace ClassLibrary
 
         public class Message
         {
-            public Message(string id, string content, string appName, MESSAGE_TYPE messageType, string toId = "")
+            public Message(string id, string content, MESSAGE_TYPE messageType, string toId = "")
             {
                 Id = id;
                 Content = content;
                 MessageType = messageType;
-                AppName = appName;
                 ToId = toId;
             }
 
             public string Id { get; set; }
             public string Content { get; set; }
-            public string AppName { get; set; }
             public string ToId { get; set; }
 
-            public List<LastMessage> LastMessages { get; set; }
 
             public MESSAGE_TYPE MessageType { get; set; }
         }
@@ -59,8 +56,7 @@ namespace ClassLibrary
             MESSAGE,
             CONNECTION,
             DISCONNECTION,
-            LAST_MESSAGE,
-            APP_NAME_INFORMATION,
+            DONNER_ID
         }
     }
 }

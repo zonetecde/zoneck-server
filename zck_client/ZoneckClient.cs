@@ -14,7 +14,6 @@ namespace zck_client
     {
         private Socket SocketClient { get; set; }
         public string MyId { get; set; }
-        public string AppName { get; }
         internal Action<Message> Receive { get; }
 
         public ZoneckClient(string appName, string ip, int port, Action<Message> Receive)
@@ -32,8 +31,8 @@ namespace zck_client
             thread.IsBackground = true;
             thread.Start();
 
-            // Le nom de l'application qui précède le message de connexion
-            AppName = appName;
+            // Envois au serveur pour avoir son ID
+
 
             this.Receive = Receive;
         }
@@ -45,7 +44,7 @@ namespace zck_client
         public void Send(string str, string toId = "")
         {
             // id > message 
-            string msg = JsonConvert.SerializeObject(new Message(MyId, str, AppName, MESSAGE_TYPE.MESSAGE, toId)) + "\r\n";
+            string msg = JsonConvert.SerializeObject(new Message(MyId, str, MESSAGE_TYPE.MESSAGE, toId)) + "\r\n";
             //Receive(new Message(ConnetionId, str, AppName, MESSAGE_TYPE.MESSAGE));
 
             var buffter = Encoding.UTF8.GetBytes(msg);
@@ -69,27 +68,11 @@ namespace zck_client
                 {
                     Message received_message = JsonConvert.DeserializeObject<Message>(message);
 
-                    // Si c'est pour informer de son Id de session et informer ensuite le serveur que nous sommes de l'App (nouvelle connexion)
-                    if (received_message.MessageType == MESSAGE_TYPE.CONNECTION)
-                    {
-                        MyId = received_message.Id;
+                    // pour id
+                    if (received_message.MessageType == MESSAGE_TYPE.DONNER_ID)
+                        MyId = received_message.Content;
 
-                        // Renvois le nom de l'appName en échange
-                        Message msg = new Message(MyId, string.Empty, AppName, MESSAGE_TYPE.APP_NAME_INFORMATION);
-                        var buffter = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(msg) + "\r\n");
-                        var temp = SocketClient.Send(buffter);
-                    }
-                    // Si le message est une réponse à une demande de %last_message% 
-                    else if (received_message.MessageType == MESSAGE_TYPE.LAST_MESSAGE) // si c'est un last message
-                    {
-                        List<LastMessage> lastMessages = JsonConvert.DeserializeObject<List<LastMessage>>(received_message.Content);
-
-                        Receive(
-                        new Message(string.Empty, string.Empty, string.Empty, MESSAGE_TYPE.LAST_MESSAGE) { LastMessages = lastMessages }
-                        );
-                    }
-                    else
-                        Receive(received_message);
+                    Receive(received_message);
                 }
             }
         }

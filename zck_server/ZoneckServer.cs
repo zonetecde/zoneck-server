@@ -5,6 +5,7 @@ using SuperSocket.SocketBase.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using static ClassLibrary.ClassLibrary;
 
 namespace sck_server
@@ -13,7 +14,6 @@ namespace sck_server
     {
         static AppServer Server { get; set; }
 
-        private static List<User> usersConnected = new List<User>();
         private static bool enableDebug = false;
 
         public ZoneckServer(string IP = "127.0.0.1", int Port = 30000)
@@ -79,17 +79,29 @@ namespace sck_server
         /// </summary>
         /// <param name="session">La session de la nouvelle connexion</param>
         static void appServer_NewSessionConnected(AppSession session)
-        {
-            // envois son adresse personne à la personne connecté pour qu'elle puisse l'enregistrer dans une variable (client)
-            Message message_connection_as = new Message(session.SessionID, string.Empty, string.Empty, MESSAGE_TYPE.CONNECTION);
-            session.Send(JsonConvert.SerializeObject(message_connection_as));
-
+        {          
             // debug log
             if(enableDebug)
                 Console.WriteLine("[server-connexion] as " + session.SessionID);
 
-            // ajoute la connexion à la liste des personnes connectées au serveur
-            usersConnected.Add(new User(session.SessionID));
+            session.Send(JsonConvert.SerializeObject(new Message("serveur", session.SessionID, MESSAGE_TYPE.DONNER_ID))); // Envois l'id au client
+
+            // Informe les autres client que x.Id s'est connecté
+            Message message_connection = new Message(session.SessionID, string.Empty,  MESSAGE_TYPE.CONNECTION);
+            string msg = JsonConvert.SerializeObject(message_connection);
+
+            foreach (var u in Server.GetAllSessions().ToList())
+            {
+                if (u.SessionID != session.SessionID)
+                {
+                    u.Send(msg);
+                    // debug log
+                    if (enableDebug)
+                        Console.WriteLine("Envois à " + u.SessionID + " que " + session.SessionID + " s'est connecté.");
+
+                    Console.WriteLine("INFO CONNECTER ENVOYER à " + u.SessionID);
+                }
+            }
         }
 
         /// <summary>
@@ -100,20 +112,20 @@ namespace sck_server
         static void appServer_NewSessionClosed(AppSession session, CloseReason aaa)
         {
             // Créer le message de déconnexion à envoyer à toutes les personnes connecté au serveur sur la même App
-            Message message_disconnection_as = new Message(session.SessionID, string.Empty, string.Empty, MESSAGE_TYPE.DISCONNECTION);
+            Message message_disconnection_as = new Message(session.SessionID, string.Empty, MESSAGE_TYPE.DISCONNECTION);
 
             // Pour chaque session sur le serveur
             foreach (var u in Server.GetAllSessions())
             {
                 // si ce n'est pas la personne déconnecté
                 if (u.SessionID != session.SessionID)
-                    // si il appartient à la même App
-                    if (usersConnected.FirstOrDefault(x => x.userID == session.SessionID).userApp ==
-                        usersConnected.FirstOrDefault(x => x.userID == u.SessionID).userApp)
+                {
                     // le prévient que x s'est déconnecté
-                    {
-                        u.Send(JsonConvert.SerializeObject(message_disconnection_as));
-                    }
+                
+                    u.Send(JsonConvert.SerializeObject(message_disconnection_as));
+                
+                    
+                }
             }
 
             // debug log
@@ -121,12 +133,9 @@ namespace sck_server
             if (enableDebug)
                 Console.WriteLine(DateTime.Now.ToString() + " - " + disconnectionMessage);
 
-            // enlève la personne de la liste des users connectés au serveur
-            usersConnected.RemoveAll(x => x.userID == session.SessionID);
-
             // debug log : nombre de personne connectée sur le serveur
             if (enableDebug)
-                Console.WriteLine("utilisateur connecté au serveur " + usersConnected.Count);
+                Console.WriteLine("utilisateur connecté au serveur " + Server.GetAllSessions().Count());
         }
 
         /// <summary>
@@ -144,52 +153,36 @@ namespace sck_server
             if (enableDebug)
                 Console.WriteLine(DateTime.Now.ToString() + " - " + received_message.Id + " pour " + received_message.ToId == string.Empty ? "tout le monde" : received_message.ToId + " > " + received_message.Content);
 
-            // si c'est un message de connexion
-            if (received_message.MessageType == MESSAGE_TYPE.APP_NAME_INFORMATION)
-            {
-                // on attribue le nom de l'application (se trouvant dans le message) à l'utilisateur qui s'est connecté
-                usersConnected.FirstOrDefault(x => x.userID == clientSession.SessionID).userApp = received_message.AppName;
-            }
-            else if (received_message.MessageType == MESSAGE_TYPE.LAST_MESSAGE) // si c'est une demande de %last_message% de tous les users
-            {
-                List<LastMessage> lastMessages = new List<LastMessage>();
 
-                // Pour chaque utilisateur sur le serveur
+            // si c'est pour tout le monde ou pour une personne en particulier
+            if (String.IsNullOrEmpty(received_message.ToId))
+            {
                 foreach (var u in Server.GetAllSessions().ToList())
                 {
-                    // Si il appartient à la même App et que ce n'est pas l'envoyeur
                     if (u.SessionID != clientSession.SessionID)
-                        if (usersConnected.FirstOrDefault(x => x.userID == clientSession.SessionID).userApp ==
-                                usersConnected.FirstOrDefault(x => x.userID == u.SessionID).userApp)
-                            // envois à l'utilisateur en réponse le statut de la personne x sur sa dernière activité 
-                            lastMessages.Add(new LastMessage(u.SessionID, usersConnected.FirstOrDefault(x => x.userID == u.SessionID).lastMessage));
-                }
-
-                // Envois les messages
-                clientSession.Send(JsonConvert.SerializeObject(new Message(String.Empty, JsonConvert.SerializeObject(lastMessages), string.Empty, MESSAGE_TYPE.LAST_MESSAGE))); ;
-
-                return;
-            }
-
-            // Si c'est un message normal - ou de connexion - on l’envoi à tous les users de la même app
-            // si c'est pour tout le monde ou pour une personne en particulier
-            foreach (var u in Server.GetAllSessions().ToList())
-            {
-                if (u.SessionID != clientSession.SessionID)
-                {
-                    if(received_message.ToId == string.Empty || received_message.ToId == u.SessionID) // gère l'envois de tt le monde ou private message
-                        if (usersConnected.FirstOrDefault(x => x.userID == clientSession.SessionID).userApp ==
-                            usersConnected.FirstOrDefault(x => x.userID == u.SessionID).userApp)
+                    {
+                        if (received_message.ToId == string.Empty || received_message.ToId == u.SessionID) // gère l'envois de tt le monde ou private message
                         {
                             u.Send(message_brute);
+
+                            if (enableDebug)
+                                Console.WriteLine("Envois d'un message de " + clientSession.SessionID + " à " + u.SessionID + " : " + message_brute);
                         }
+                    }
                 }
-
-
             }
-
-            // set ce message comme étant le dernier que cette personne est envoyé
-            usersConnected.FirstOrDefault(x => x.userID == clientSession.SessionID).lastMessage = received_message.Content;
+            else
+            {
+                if (Server.GetSessionByID(received_message.ToId).TrySend(message_brute))
+                {
+                    Console.WriteLine("[MESSAGE PRIVE] de " + received_message.Id + " à " + received_message.ToId);
+                }
+                else
+                {
+                    Console.WriteLine("pas envoyé, erreur!");
+                }
+            }
+                     
         }
     }
 }
