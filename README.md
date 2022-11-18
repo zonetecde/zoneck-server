@@ -1,6 +1,4 @@
 # zoneck-server
-Serveur et client de mes logiciels
+Serveur/Client TCP pour utliser certains de mes logiciels
 
-Serveur / Client TCP de mes logiciels
-
-Communique via des messages
+![image](https://user-images.githubusercontent.com/56195432/202782346-4f5af12a-0bdf-4715-95fa-bba538007b6e.png)
