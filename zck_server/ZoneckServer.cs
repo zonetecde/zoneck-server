@@ -56,7 +56,7 @@ namespace sck_server
             // message reçu d'une personne
             Server.NewRequestReceived += new RequestHandler<AppSession, StringRequestInfo>(appServer_NewRequestReceived);
 
-            Console.WriteLine("Debug? Y/N");
+            Console.WriteLine("Type 'Y' to enable logs");
             if (Console.ReadLine() == "Y")
                 enableDebug = true;
 
