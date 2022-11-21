@@ -41,10 +41,10 @@ namespace zck_client
         /// Envois un message au serveur
         /// </summary>
         /// <param name="str">Le message à envoyer</param>
-        public void Send(string str, string toId = "")
+        public void Send(string str, string toId = "", bool brute = false)
         {
             // id > message 
-            string msg = JsonConvert.SerializeObject(new Message(MyId, str, MESSAGE_TYPE.MESSAGE, toId)) + "\r\n";
+            string msg = brute ? "@[B]"  + str + "\r\n" : JsonConvert.SerializeObject(new Message(MyId, str, MESSAGE_TYPE.MESSAGE, toId)) + "\r\n";
             //Receive(new Message(ConnetionId, str, AppName, MESSAGE_TYPE.MESSAGE));
 
             var buffter = Encoding.UTF8.GetBytes(msg);
@@ -60,20 +60,35 @@ namespace zck_client
             {
                 // Recupère le message reçu
                 byte[] buffer = new byte[1024 * 1024 * 2];
-                var effective = SocketClient.Receive(buffer);
 
-                var message = Encoding.UTF8.GetString(buffer, 0, effective);
-
-                if (!String.IsNullOrEmpty(message))
+                try
                 {
-                    Message received_message = JsonConvert.DeserializeObject<Message>(message);
+                    var effective = SocketClient.Receive(buffer);
 
-                    // pour id
-                    if (received_message.MessageType == MESSAGE_TYPE.DONNER_ID)
-                        MyId = received_message.Content;
+                    var message = Encoding.UTF8.GetString(buffer, 0, effective);
 
-                    Receive(received_message);
+                    if (!String.IsNullOrEmpty(message))
+                    {
+                        if (!message.Contains("@[B]"))
+                        {
+                            Message received_message = JsonConvert.DeserializeObject<Message>(message);
+
+                            // pour id
+                            if (received_message.MessageType == MESSAGE_TYPE.DONNER_ID)
+                                MyId = received_message.Content;
+
+                            Receive(received_message);
+                        }
+                        else
+                        {
+                            Receive(new Message(String.Empty, message.Remove(0, 4), MESSAGE_TYPE.MESSAGE_BRUTE));
+                        }
+
+                    }
                 }
+                catch
+                { }
+                
             }
         }
     }

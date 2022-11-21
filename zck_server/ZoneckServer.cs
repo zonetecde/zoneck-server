@@ -27,6 +27,8 @@ namespace sck_server
                 Name = "serveur",
                 TextEncoding = "UTF-8",
                 Ip = IP,
+                MaxRequestLength = int.MaxValue,
+               
             };
 
             // essaye de setup le serveur
@@ -145,42 +147,53 @@ namespace sck_server
         {
             // récupère le message 
             string message_brute = (requestInfo.Key + " " + requestInfo.Body).Replace("\r\n", string.Empty);
-            Message received_message = JsonConvert.DeserializeObject<Message>(message_brute);
-
-            // debug log
-            if (enableDebug)
-                Console.WriteLine(DateTime.Now.ToString() + " - " + received_message.Id + " pour " + received_message.ToId == string.Empty ? "tout le monde" : received_message.ToId + " > " + received_message.Content);
-
-
-            // si c'est pour tout le monde ou pour une personne en particulier
-            if (String.IsNullOrEmpty(received_message.ToId))
+            if (!message_brute.Contains("@[B]"))
             {
-                foreach (var u in Server.GetAllSessions().ToList())
-                {
-                    if (u.SessionID != clientSession.SessionID)
-                    {
-                        if (received_message.ToId == string.Empty || received_message.ToId == u.SessionID) // gère l'envois de tt le monde ou private message
-                        {
-                            u.Send(message_brute);
 
-                            if (enableDebug)
-                                Console.WriteLine("Envois d'un message de " + clientSession.SessionID + " à " + u.SessionID + " : " + message_brute);
+                Message received_message = JsonConvert.DeserializeObject<Message>(message_brute);
+
+                // debug log
+                if (enableDebug)
+                    Console.WriteLine(DateTime.Now.ToString() + " - " + received_message.Id + " pour " + received_message.ToId == string.Empty ? "tout le monde" : received_message.ToId + " > " + received_message.Content);
+
+
+                // si c'est pour tout le monde ou pour une personne en particulier
+                if (String.IsNullOrEmpty(received_message.ToId))
+                {
+                    foreach (var u in Server.GetAllSessions().ToList())
+                    {
+                        if (u.SessionID != clientSession.SessionID)
+                        {
+                            if (received_message.ToId == string.Empty || received_message.ToId == u.SessionID) // gère l'envois de tt le monde ou private message
+                            {
+                                u.Send(message_brute);
+
+                                if (enableDebug)
+                                    Console.WriteLine("Envois d'un message de " + clientSession.SessionID + " à " + u.SessionID + " : " + message_brute);
+                            }
                         }
+                    }
+                }
+                else
+                {
+                    if (Server.GetSessionByID(received_message.ToId).TrySend(message_brute))
+                    {
+                        if (enableDebug)
+                            Console.WriteLine("[MESSAGE PRIVE] de " + received_message.Id + " à " + received_message.ToId);
+                    }
+                    else
+                    {
+                        if (enableDebug)
+                            Console.WriteLine("pas envoyé, erreur!");
                     }
                 }
             }
             else
             {
-                if (Server.GetSessionByID(received_message.ToId).TrySend(message_brute))
-                {
-                    if(enableDebug)
-                    Console.WriteLine("[MESSAGE PRIVE] de " + received_message.Id + " à " + received_message.ToId);
-                }
-                else
-                {
-                    if (enableDebug)
-                        Console.WriteLine("pas envoyé, erreur!");
-                }
+                // message brute
+                if (enableDebug)
+                    Console.WriteLine("[MESSAGE PRIVE BRUTE]");
+                Server.GetAllSessions().ToList().FirstOrDefault(x => x.SessionID == message_brute.Split(',').Last().Trim()).Send(message_brute); 
             }
                      
         }

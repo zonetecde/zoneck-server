@@ -56,7 +56,8 @@ namespace ClassLibrary
             MESSAGE,
             CONNECTION,
             DISCONNECTION,
-            DONNER_ID
+            DONNER_ID,
+            MESSAGE_BRUTE
         }
     }
 }
