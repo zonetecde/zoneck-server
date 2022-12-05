@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClassLibrary
+namespace zck_client
 {
     public class ClassLibrary
     {
@@ -63,5 +63,6 @@ namespace ClassLibrary
             DELETE_FILE,
             CREATE_FILE
         }
+
     }
 }

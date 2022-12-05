@@ -5,8 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using ClassLibrary;
-using static ClassLibrary.ClassLibrary;
+using static zck_client.ClassLibrary;
 
 namespace zck_client
 {

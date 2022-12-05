@@ -8,15 +8,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quick Local Server", "Quick Local Server\Quick Local Server.csproj", "{84E7EF2B-A009-4F89-9F30-A0628741701F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zck_server", "zck_server\zck_server.csproj", "{66A04F51-ACC6-4DA7-BDD6-C43E6A6654ED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zck_client", "zck_client\zck_client.csproj", "{8F29DB71-07F3-4945-BED1-D9666024E00C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "ClassLibrary\ClassLibrary.csproj", "{8C484037-9DE2-4284-A977-EE8C232BE4DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server_test", "server_test\server_test.csproj", "{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QLS UI", "QLS UI\QLS UI.csproj", "{0CFC2209-2E4C-447E-8E7E-5E9C2E21BB40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,10 +22,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{84E7EF2B-A009-4F89-9F30-A0628741701F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84E7EF2B-A009-4F89-9F30-A0628741701F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84E7EF2B-A009-4F89-9F30-A0628741701F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84E7EF2B-A009-4F89-9F30-A0628741701F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{66A04F51-ACC6-4DA7-BDD6-C43E6A6654ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{66A04F51-ACC6-4DA7-BDD6-C43E6A6654ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66A04F51-ACC6-4DA7-BDD6-C43E6A6654ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -40,10 +34,10 @@ Global
 		{8C484037-9DE2-4284-A977-EE8C232BE4DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C484037-9DE2-4284-A977-EE8C232BE4DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C484037-9DE2-4284-A977-EE8C232BE4DE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A1D84C6-E7AD-4EA3-BBDF-92B8E2A6D373}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CFC2209-2E4C-447E-8E7E-5E9C2E21BB40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CFC2209-2E4C-447E-8E7E-5E9C2E21BB40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CFC2209-2E4C-447E-8E7E-5E9C2E21BB40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CFC2209-2E4C-447E-8E7E-5E9C2E21BB40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
