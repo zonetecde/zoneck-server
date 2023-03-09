@@ -29,7 +29,7 @@ namespace ClassLibrary
             public User(string userID)
             {
                 this.userID = userID;
-                this.userApp = string.Empty ;
+                this.userApp = string.Empty;
             }
         }
 
@@ -58,10 +58,25 @@ namespace ClassLibrary
             DISCONNECTION,
             DONNER_ID,
             MESSAGE_BRUTE,
-            MODIFY_FILE,
+            FILE_UPDATED, // au passé, mais c'est car le client lui recevra ceci lorsqu'un fichié a été modifié par un user
             GET_FILE,
-            DELETE_FILE,
-            CREATE_FILE
+            FILE_DELETED, // au passé, mais c'est car le client lui recevra ceci lorsqu'un fichié a été modifié par un user
+            CREATE_FILE,
+            LIST_FILE
+        }
+
+        public class FileMessage
+        {
+            public string path;
+            public string content;
+            public bool warnOtherPeople;
+
+            public FileMessage(string path, bool warnOtherPeople = false, string content = "")
+            {
+                this.path = path;
+                this.warnOtherPeople = warnOtherPeople;
+                this.content = content;
+            }
         }
     }
 }

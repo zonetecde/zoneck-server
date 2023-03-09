@@ -2,9 +2,9 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "QLS Zoneck"
-#define MyAppVersion "1.0.4"
+#define MyAppVersion "1.0.5"
 #define MyAppPublisher "zonetecde"
-#define MyAppURL "github.com/zonetecde"
+#define MyAppURL "github.com/zonetecde/zoneck-server"
 #define MyAppExeName "QLS UI.exe"
 
 [Setup]
@@ -22,9 +22,9 @@ DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
-OutputDir=C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\setup
+OutputDir=setup
 OutputBaseFilename=Zoneck Server Setup
-SetupIconFile=C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Logo\logo_final.ico
+SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -37,27 +37,27 @@ Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; 
 
 [Files]
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\ClassLibrary.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\ClassLibrary.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\log4net.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\log4net.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\Newtonsoft.Json.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\QLS UI.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\QLS UI.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\QLS UI.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.Common.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.Common.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.Facility.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.Facility.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketBase.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketBase.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketEngine.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketEngine.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketService.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\zck_server.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\zonedetec\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\zck_server.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\ClassLibrary.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\ClassLibrary.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\log4net.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\log4net.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\Newtonsoft.Json.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\QLS UI.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\QLS UI.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\QLS UI.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.Common.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.Common.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.Facility.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.Facility.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketBase.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketBase.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketEngine.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketEngine.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\SuperSocket.SocketService.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\zck_server.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\Cloud\OneDrive - Conseil régional Grand Est - Numérique Educatif\Programmation\c#\zoneck server\QLS UI\bin\Debug\zck_server.pdb"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

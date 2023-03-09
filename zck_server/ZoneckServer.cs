@@ -3,10 +3,8 @@ using SuperSocket.SocketBase;
 using SuperSocket.SocketBase.Config;
 using SuperSocket.SocketBase.Protocol;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using static ClassLibrary.ClassLibrary;
 
 namespace sck_server
@@ -36,7 +34,7 @@ namespace sck_server
                 TextEncoding = "UTF-8",
                 Ip = IP,
                 MaxRequestLength = int.MaxValue,
-               
+
             };
 
             // essaye de setup le serveur
@@ -95,7 +93,7 @@ namespace sck_server
             session.Send(JsonConvert.SerializeObject(new Message("serveur", session.SessionID, MESSAGE_TYPE.DONNER_ID))); // Envois l'id au client
 
             // Informe les autres client que x.Id s'est connecté
-            Message message_connection = new Message(session.SessionID, string.Empty,  MESSAGE_TYPE.CONNECTION);
+            Message message_connection = new Message(session.SessionID, string.Empty, MESSAGE_TYPE.CONNECTION);
             string msg = JsonConvert.SerializeObject(message_connection);
 
             foreach (var u in Server.GetAllSessions().ToList())
@@ -132,10 +130,10 @@ namespace sck_server
                 if (u.SessionID != session.SessionID)
                 {
                     // le prévient que x s'est déconnecté
-                
+
                     u.Send(JsonConvert.SerializeObject(message_disconnection_as));
-                
-                    
+
+
                 }
             }
 
@@ -158,38 +156,104 @@ namespace sck_server
         {
             // récupère le message 
             string message_brute = (requestInfo.Key + " " + requestInfo.Body).Replace("\r\n", string.Empty);
-         
+
             if (!message_brute.Contains("@[B]"))
             {
                 Message received_message = JsonConvert.DeserializeObject<Message>(message_brute);
 
                 if (received_message.MessageType == MESSAGE_TYPE.CREATE_FILE)
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(received_message.Content));
+                    if (!File.Exists("serverfiles/" + received_message.Content))
+                    {
+                        Directory.CreateDirectory("serverfiles/" + Path.GetDirectoryName(received_message.Content)); // créer dossier
+
+                        File.WriteAllText("serverfiles/" + received_message.Content, ""); // créer fichier
+                    }
+
                     if (enableDebug)
                         DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " created ") + received_message.Content);
 
                 }
-                else if (received_message.MessageType == MESSAGE_TYPE.DELETE_FILE)
+                else if (received_message.MessageType == MESSAGE_TYPE.FILE_DELETED)
                 {
-                    File.Delete(received_message.Content);
-                    if (enableDebug)
-                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " deleted ") + received_message.Content);
-                }
-                else if (received_message.MessageType == MESSAGE_TYPE.MODIFY_FILE)
-                {
-                    // filepath,content
-                    string fPath = received_message.Content.Split(new[] { ',' }, 2)[0];
-                    string content = received_message.Content.Split(new[] { ',' }, 2)[1];
-                    File.WriteAllText(fPath, content);
+                    FileMessage fM = JsonConvert.DeserializeObject<FileMessage>(received_message.Content);
+
+                    if (File.Exists("serverfiles/" + fM.path))
+                        File.Delete("serverfiles/" + fM.path);
+
+                    if (fM.warnOtherPeople)
+                    {
+                        // envois un message aux autres utilisateurs
+                        foreach (var u in Server.GetAllSessions().ToList())
+                        {
+                            if (u.SessionID != clientSession.SessionID)
+                            {
+
+                                u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, fM.path, MESSAGE_TYPE.FILE_DELETED)));
+
+                                if (enableDebug)
+                                    DebugMessage(DateTime.Now.ToString() + " - message sent from " + clientSession.SessionID + " to " + u.SessionID + " : " + "file deleted");
+
+                            }
+                        }
+                    }
 
                     if (enableDebug)
-                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " modified ") + fPath + " : " + content);
+                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " deleted ") + fM.path);
+                }
+                else if (received_message.MessageType == MESSAGE_TYPE.LIST_FILE)
+                {
+                    var files = Directory.GetFiles("serverfiles/", "*.*", SearchOption.AllDirectories);
+
+                    Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message(received_message.Content, String.Join(",", files).Replace("serverfiles/", string.Empty), MESSAGE_TYPE.LIST_FILE)));
+
+                    if (enableDebug)
+                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " listed created files"));
+                }
+                else if (received_message.MessageType == MESSAGE_TYPE.FILE_UPDATED)
+                {
+                    FileMessage fM = JsonConvert.DeserializeObject<FileMessage>(received_message.Content);
+
+                    if (File.Exists("serverfiles/" + fM.path))
+                        File.WriteAllText("serverfiles/" + fM.path, fM.content);
+                    else
+                    {
+                        Directory.CreateDirectory("serverfiles/" + Path.GetDirectoryName(fM.path)); // créer dossier
+                        File.WriteAllText("serverfiles/" + fM.path, fM.content);
+
+                    }
+
+                    if (fM.warnOtherPeople)
+                    {
+                        // envois un message aux autres utilisateurs
+                        foreach (var u in Server.GetAllSessions().ToList())
+                        {
+                            if (u.SessionID != clientSession.SessionID)
+                            {
+                                // .content est un objet de type FileMessage contenant le chemin d'accès au fichier + son nouveau contenue
+                                u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, JsonConvert.SerializeObject(new FileMessage(fM.path, content: fM.content)), MESSAGE_TYPE.FILE_UPDATED)));
+
+                                if (enableDebug)
+                                    DebugMessage(DateTime.Now.ToString() + " - message sent from " + clientSession.SessionID + " to " + u.SessionID + " : " + "file updated");
+
+                            }
+                        }
+                    }
+
+
+                    if (enableDebug)
+                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " modified ") + fM.path + " : " + fM.content);
                 }
                 else if (received_message.MessageType == MESSAGE_TYPE.GET_FILE)
                 {
                     // filepath
-                    File.ReadAllText(received_message.Content);
+                    if (!File.Exists("serverfiles/" + received_message.Content))
+                        File.WriteAllText("serverfiles/" + received_message.Content, "");
+
+                    string content = File.ReadAllText("serverfiles/" + received_message.Content);
+                    // renvois le contenu du fichier au client
+                    // id = serveur,filepath
+                    Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message(received_message.Content, content, MESSAGE_TYPE.GET_FILE)));
 
                     if (enableDebug)
                         DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " get ") + received_message.Content + "'s file content");
@@ -237,9 +301,9 @@ namespace sck_server
                 // message brute
                 if (enableDebug)
                     DebugMessage(DateTime.Now.ToString() + " - [private-brute-message-send] from " + clientSession.SessionID + " to " + message_brute.Split(',').Last().Trim());
-                Server.GetAllSessions().ToList().FirstOrDefault(x => x.SessionID == message_brute.Split(',').Last().Trim()).Send(message_brute); 
+                Server.GetAllSessions().ToList().FirstOrDefault(x => x.SessionID == message_brute.Split(',').Last().Trim()).Send(message_brute);
             }
-                     
+
         }
     }
 }

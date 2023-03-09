@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace zck_client
+﻿namespace zck_client
 {
     public class ClassLibrary
     {
@@ -29,7 +23,7 @@ namespace zck_client
             public User(string userID)
             {
                 this.userID = userID;
-                this.userApp = string.Empty ;
+                this.userApp = string.Empty;
             }
         }
 
@@ -58,11 +52,25 @@ namespace zck_client
             DISCONNECTION,
             DONNER_ID,
             MESSAGE_BRUTE,
-            MODIFY_FILE,
+            FILE_UPDATED,
             GET_FILE,
-            DELETE_FILE,
-            CREATE_FILE
+            FILE_DELETED,
+            CREATE_FILE,
+            LIST_FILE
         }
 
+        public class FileMessage
+        {
+            public string path;
+            public string content;
+            public bool warnOtherPeople;
+
+            public FileMessage(string path, bool warnOtherPeople, string content = "")
+            {
+                this.path = path;
+                this.warnOtherPeople = warnOtherPeople;
+                this.content = content;
+            }
+        }
     }
 }
