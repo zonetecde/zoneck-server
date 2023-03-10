@@ -52,7 +52,7 @@ namespace QLS_UI
                 Properties.Settings.Default.port = txtBox_port.Text;
                 Properties.Settings.Default.Save();
 
-                rtb_logs.AppendText(DateTime.Now.ToString() + " - Server startup");
+                rtb_logs.AppendText(DateTime.Now.ToString() + " - Lancement du serveur \r\n");
 
                 Grid_Setup.Visibility = Visibility.Hidden;
                 Grid_Logs.Visibility = Visibility.Visible;
@@ -82,9 +82,9 @@ namespace QLS_UI
         {
             Dispatcher.Invoke(() =>
             {
-                if (obj.Contains("[nbre-personne-connecté] - "))
+                if (obj.Contains(" - Nombre de personne(s) connectée(s) au serveur : "))
                 {            
-                    label_connecter.Content = "connecté : " + obj.Remove(0, obj.LastIndexOf('-') + 2).Trim();
+                    label_connecter.Content = "connecté : " + obj.Remove(0, obj.LastIndexOf(':') + 2).Trim();
                 }
                 if (checkbox_logs.IsChecked == true)
                 { 
@@ -101,7 +101,7 @@ namespace QLS_UI
                 serveur.StopServer();
                 T_ExecutionTime.Stop();
 
-                rtb_logs.AppendText("\n" + DateTime.Now.ToString() + " - Serveur stoppé" + "\r\n");
+                rtb_logs.AppendText("\n" + DateTime.Now.ToString() + " - Arrêt du serveur" + "\r\n");
                 rtb_logs.ScrollToEnd();
 
                 (sender as Button).Content = "Lancer";
@@ -112,7 +112,7 @@ namespace QLS_UI
                 try
                 {
                     serveur = new ZoneckServer(txtBox_ip.Text, Convert.ToInt32(txtBox_port.Text), DebugMessage);
-                    rtb_logs.AppendText("\n" + DateTime.Now.ToString() + " - Serveur lancé" + "\r\n");
+                    rtb_logs.AppendText("\n" + DateTime.Now.ToString() + " - Lancement du serveur" + "\r\n");
                     rtb_logs.ScrollToEnd();
                 }
                 catch

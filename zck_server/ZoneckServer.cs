@@ -21,49 +21,54 @@ namespace sck_server
 
         private static bool enableDebug = true;
 
+        /// <summary>
+        /// Créé une instance du serveur
+        /// </summary>
+        /// <param name="IP">L'adresse IP du serveur</param>    
+        /// <param name="Port">Le port d'écoute du serveur</param>    
+        /// <param name="_DebugMessage">Reçoit les messages de débogage</param>    
         public ZoneckServer(string IP = "127.0.0.1", int Port = 30000, Action<string> _DebugMessage = null)
         {
             Server = new AppServer();
             DebugMessage = _DebugMessage;
 
+            // Configure le serveur
             var m_Config = new ServerConfig
             {
                 Port = Port,
                 Mode = SocketMode.Tcp,
-                Name = "QLS_Zoneck",
-                TextEncoding = "UTF-8",
+                Name = "QLS_Zoneck", // Nom du serveur
+                TextEncoding = "UTF-8", // Encoding des données 
                 Ip = IP,
-                MaxRequestLength = int.MaxValue,
-
+                MaxRequestLength = int.MaxValue, // Taille max d'une requête
             };
 
-            // essaye de setup le serveur
-            if (!Server.Setup(m_Config))//Setup with listening port
+            // Essaye de Setup le serveur avec le port d'écoute
+            if (!Server.Setup(m_Config))
             {
                 throw WrongIpOrPortException;
             }
 
-            // essaye de start le serveur
+            // Essaye de start le serveur
             if (!Server.Start())
             {
                 throw FailedToStartException;
             }
 
-            // server start
-            Console.WriteLine("The Server started successfully, press key'q' to stop it! \nIp : " + Server.Config.Ip + "\nPort : " + Server.Config.Port); ;
+            // Le serveur est lancé 
 
-            //      event
-            // nouvelle personne connectée
+            // Event : Client connecté
             Server.NewSessionConnected += new SessionHandler<AppSession>(appServer_NewSessionConnected);
-            // personne déconnectée
+            // Event : Client déconnectée
             Server.SessionClosed += appServer_NewSessionClosed;
-            // message reçu d'une personne
+            // Event : Requête reçu d'un client
             Server.NewRequestReceived += new RequestHandler<AppSession, StringRequestInfo>(appServer_NewRequestReceived);
 
             enableDebug = DebugMessage != null;
 
-            //System.Threading.Thread.Sleep(100000);
+            // Si le serveur est une application console, décommenter ce qui suit :
 
+            //Console.WriteLine("The Server started successfully, press key'q' to stop it! \nIp : " + Server.Config.Ip + "\nPort : " + Server.Config.Port); ;
             //while (Console.ReadKey().KeyChar != 'q')
             //{
             //    Console.WriteLine();
@@ -71,239 +76,247 @@ namespace sck_server
             //}
         }
 
+        /// <summary>
+        /// Stop le serveur
+        /// </summary>
         public void StopServer()
         {
-            // serveur stoppé
             Server.Stop();
         }
 
         /// <summary>
-        /// Nouvelle personne connectée au serveur
+        /// Un nouveau client s'est connecté au serveur
         /// </summary>
         /// <param name="session">La session de la nouvelle connexion</param>
         static void appServer_NewSessionConnected(AppSession session)
         {
             NumberClient++;
-            // debug log
+
             if (enableDebug)
             {
-                DebugMessage(DateTime.Now.ToString() + " - " + "[server-connexion] as " + session.SessionID);
+                DebugMessage(DateTime.Now.ToString() + " - " + "Nouveau client connecté : " + session.SessionID);
+                DebugMessage(DateTime.Now.ToString() + " - Nombre de personne(s) connectée(s) au serveur : " + (NumberClient));
             }
 
+            // Le client reçoit son propre Id par l'intermédiaire de ce message. Il est ensuite interprété par le client, et il le stock dans une variable.
             session.Send(JsonConvert.SerializeObject(new Message("serveur", session.SessionID, MESSAGE_TYPE.DONNER_ID))); // Envois l'id au client
 
-            // Informe les autres client que x.Id s'est connecté
+            // Informe les autres clients que x.Id s'est connecté
+            // Créé le message à envoyer
             Message message_connection = new Message(session.SessionID, string.Empty, MESSAGE_TYPE.CONNECTION);
             string msg = JsonConvert.SerializeObject(message_connection);
 
+            // Pour chaque session sur le serveur
             foreach (var u in Server.GetAllSessions().ToList())
             {
+                // Si ce n'est pas le client connecté 
                 if (u.SessionID != session.SessionID)
                 {
+                    // Prévient le client de la connexion de 'session'  
                     u.Send(msg);
-                    // debug log
                     if (enableDebug)
-                        DebugMessage(DateTime.Now.ToString() + " - " + "[connexion-information-sender] to " + u.SessionID + " that " + session.SessionID + " is connected");
+                        DebugMessage(DateTime.Now.ToString() + " - " + u.SessionID + " sait que " + session.SessionID + " s'est connecté");
                 }
             }
-
-            if (enableDebug)
-                DebugMessage(DateTime.Now.ToString() + " - [nbre-personne-connecté] - " + (NumberClient));
         }
 
         /// <summary>
-        /// Personne déconnectée du serveur
+        /// Un client s'est déconnecté du serveur
         /// </summary>
-        /// <param name="session">La personne qui se déconnecte</param>
-        /// <param name="aaa">La raison de la déconnexion</param>
-        static void appServer_NewSessionClosed(AppSession session, CloseReason aaa)
+        /// <param name="session">La session du client qui s'est déconnecté</param>
+        /// <param name="reason">La raison de la déconnexion</param>
+        static void appServer_NewSessionClosed(AppSession session, CloseReason reason)
         {
+            // Retire 1 au compteur de client
             NumberClient--;
 
-            // Créer le message de déconnexion à envoyer à toutes les personnes connecté au serveur sur la même App
-            Message message_disconnection_as = new Message(session.SessionID, string.Empty, MESSAGE_TYPE.DISCONNECTION);
+            if (enableDebug)
+            {
+                DebugMessage(DateTime.Now.ToString() + " - Le client " + session.SessionID + " s'est déconnecté");
+                DebugMessage(DateTime.Now.ToString() + " - Nombre de personne(s) connectée(s) au serveur : " + (NumberClient));
+            }
+
+            // Créer le message de déconnexion à envoyer à toutes les personnes connectées au serveur 
+            Message msgDeconnexion = new Message(session.SessionID, string.Empty, MESSAGE_TYPE.DISCONNECTION);
+            string msg = JsonConvert.SerializeObject(msgDeconnexion);
 
             // Pour chaque session sur le serveur
             foreach (var u in Server.GetAllSessions())
             {
-                // si ce n'est pas la personne déconnecté
+                // Si ce n'est pas le client déconnecté 
                 if (u.SessionID != session.SessionID)
                 {
-                    // le prévient que x s'est déconnecté
-
-                    u.Send(JsonConvert.SerializeObject(message_disconnection_as));
-
-
+                    // Prévient le client de la déconnexion de 'session'  
+                    u.Send(msg);
+                    if (enableDebug)
+                        DebugMessage(DateTime.Now.ToString() + " - " + u.SessionID + " sait que " + session.SessionID + " s'est déconnecté");
                 }
             }
-
-            // debug log
-            string disconnectionMessage = "[disconnection] of " + session.SessionID;
-            if (enableDebug)
-                DebugMessage(DateTime.Now.ToString() + " - " + disconnectionMessage);
-
-            // debug log : nombre de personne connectée sur le serveur
-            if (enableDebug)
-                DebugMessage(DateTime.Now.ToString() + " - [nbre-personne-connecté] - " + NumberClient);
         }
 
         /// <summary>
         /// Message reçu d'un client
         /// </summary>
         /// <param name="clientSession">La session du client qui a envoyé un message</param>
-        /// <param name="requestInfo">Le message</param>
+        /// <param name="requestInfo">Le message en json, objet du type 'Message'</param>
         static void appServer_NewRequestReceived(AppSession clientSession, StringRequestInfo requestInfo)
         {
-            // récupère le message 
+            // Récupère le message json
             string message_brute = (requestInfo.Key + " " + requestInfo.Body).Replace("\r\n", string.Empty);
 
-            if (!message_brute.Contains("@[B]"))
+            // Récupère l'objet Message
+            Message received_message = JsonConvert.DeserializeObject<Message>(message_brute);
+
+            // Demande de création de fichier sur le serveur
+            // Le .Content contient le chemin d'accès au fichier
+            if (received_message.MessageType == MESSAGE_TYPE.CREATE_FILE)
             {
-                Message received_message = JsonConvert.DeserializeObject<Message>(message_brute);
-
-                if (received_message.MessageType == MESSAGE_TYPE.CREATE_FILE)
+                // Si le fichier n'existe pas déjà
+                if (!File.Exists("serverfiles/" + received_message.Content))
                 {
-                    if (!File.Exists("serverfiles/" + received_message.Content))
-                    {
-                        Directory.CreateDirectory("serverfiles/" + Path.GetDirectoryName(received_message.Content)); // créer dossier
+                    // Créé d'abord le dossier
+                    Directory.CreateDirectory("serverfiles/" + Path.GetDirectoryName(received_message.Content)); // créer dossier
 
-                        File.WriteAllText("serverfiles/" + received_message.Content, ""); // créer fichier
-                    }
+                    // Créé ensuite le fichier texte vide
+                    File.WriteAllText("serverfiles/" + received_message.Content, ""); // créer fichier
+                }
+
+                if (enableDebug)
+                    DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " created ") + received_message.Content);
+
+            }
+            // Demande de supprimer un fichier sur le serveur
+            // Le .Content contient un json d'un objet FileMessage contenant le chemin d'accès au fichier 
+            // et si on veut que les autres clients soit au courant de la suppression du fichier
+            else if (received_message.MessageType == MESSAGE_TYPE.FILE_DELETED)
+            {
+                // Récupère l'objet FileMessage du .Content
+                FileMessage fM = JsonConvert.DeserializeObject<FileMessage>(received_message.Content);
+
+                // Si le fichier existe bien
+                if (File.Exists("serverfiles/" + fM.Path))
+                {
+                    // Supprime le fichier du serveur
+                    File.Delete("serverfiles/" + fM.Path);
 
                     if (enableDebug)
-                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " created ") + received_message.Content);
+                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " a supprimé le fichier ") + fM.Path);
 
-                }
-                else if (received_message.MessageType == MESSAGE_TYPE.FILE_DELETED)
-                {
-                    FileMessage fM = JsonConvert.DeserializeObject<FileMessage>(received_message.Content);
-
-                    if (File.Exists("serverfiles/" + fM.path))
-                        File.Delete("serverfiles/" + fM.path);
-
-                    if (fM.warnOtherPeople)
+                    // Si on veut que les autres clients soit au courant que le fichier a été supprimé
+                    if (fM.WarnOtherPeople)
                     {
-                        // envois un message aux autres utilisateurs
+                        // Envois un message aux autres clients
                         foreach (var u in Server.GetAllSessions().ToList())
                         {
+                            // Si ce n'est pas l'utilisateur ayant supprimé le fichier
                             if (u.SessionID != clientSession.SessionID)
                             {
-
-                                u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, fM.path, MESSAGE_TYPE.FILE_DELETED)));
+                                // Envois l'alerte au client 'u' que le fichier a été supprimé
+                                u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, fM.Path, MESSAGE_TYPE.FILE_DELETED)));
 
                                 if (enableDebug)
-                                    DebugMessage(DateTime.Now.ToString() + " - message sent from " + clientSession.SessionID + " to " + u.SessionID + " : " + "file deleted");
-
+                                    DebugMessage(DateTime.Now.ToString() + " - Le client " + u.SessionID + " sait que " + fM.Path + " a été supprimé");
                             }
                         }
                     }
-
-                    if (enableDebug)
-                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " deleted ") + fM.path);
                 }
-                else if (received_message.MessageType == MESSAGE_TYPE.LIST_FILE)
-                {
-                    var files = Directory.GetFiles("serverfiles/", "*.*", SearchOption.AllDirectories);
+            }
+            // Si le client veut recevoir une liste des fichiers présent sur le serveur
+            else if (received_message.MessageType == MESSAGE_TYPE.LIST_FILE)
+            {
+                // Liste tous les fichiers du serveur créé par les clients
+                var files = Directory.GetFiles("serverfiles/", "*.*", SearchOption.AllDirectories);
 
-                    Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message(received_message.Content, String.Join(",", files).Replace("serverfiles/", string.Empty), MESSAGE_TYPE.LIST_FILE)));
+                // Renvois à la personne un objet de type Message contenant la liste des fichiers séparés par une virgule.
+                Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message(received_message.Content, String.Join(",", files).Replace("serverfiles/", string.Empty), MESSAGE_TYPE.LIST_FILE)));
 
-                    if (enableDebug)
-                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " listed created files"));
-                }
-                else if (received_message.MessageType == MESSAGE_TYPE.FILE_UPDATED)
-                {
-                    FileMessage fM = JsonConvert.DeserializeObject<FileMessage>(received_message.Content);
+                if (enableDebug)
+                    DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " a reçu une liste des fichiers présents sur le serveur"));
+            }
+            // Si le client veut modifier un fichier
+            // Le .Content contient un json d'un objet FileMessage contenant le chemin d'accès au fichier, 
+            // le nouveau contenue du fichier a modifié et si on veut que les autres clients soit au courant de la modification du fichier
+            else if (received_message.MessageType == MESSAGE_TYPE.FILE_UPDATED)
+            {
+                // Récupère le message FileMessage
+                FileMessage fM = JsonConvert.DeserializeObject<FileMessage>(received_message.Content);
 
-                    if (File.Exists("serverfiles/" + fM.path))
-                        File.WriteAllText("serverfiles/" + fM.path, fM.content);
-                    else
-                    {
-                        Directory.CreateDirectory("serverfiles/" + Path.GetDirectoryName(fM.path)); // créer dossier
-                        File.WriteAllText("serverfiles/" + fM.path, fM.content);
+                if (enableDebug)
+                    DebugMessage(DateTime.Now.ToString() + " - " + received_message.Id + " a modifié le fichier : " + fM.Path);
 
-                    }
-
-                    if (fM.warnOtherPeople)
-                    {
-                        // envois un message aux autres utilisateurs
-                        foreach (var u in Server.GetAllSessions().ToList())
-                        {
-                            if (u.SessionID != clientSession.SessionID)
-                            {
-                                // .content est un objet de type FileMessage contenant le chemin d'accès au fichier + son nouveau contenue
-                                u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, JsonConvert.SerializeObject(new FileMessage(fM.path, content: fM.content)), MESSAGE_TYPE.FILE_UPDATED)));
-
-                                if (enableDebug)
-                                    DebugMessage(DateTime.Now.ToString() + " - message sent from " + clientSession.SessionID + " to " + u.SessionID + " : " + "file updated");
-
-                            }
-                        }
-                    }
-
-
-                    if (enableDebug)
-                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " modified ") + fM.path + " : " + fM.content);
-                }
-                else if (received_message.MessageType == MESSAGE_TYPE.GET_FILE)
-                {
-                    // filepath
-                    if (!File.Exists("serverfiles/" + received_message.Content))
-                        File.WriteAllText("serverfiles/" + received_message.Content, "");
-
-                    string content = File.ReadAllText("serverfiles/" + received_message.Content);
-                    // renvois le contenu du fichier au client
-                    // id = serveur,filepath
-                    Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message(received_message.Content, content, MESSAGE_TYPE.GET_FILE)));
-
-                    if (enableDebug)
-                        DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " get ") + received_message.Content + "'s file content");
-                }
+                // Si le fichier existe
+                if (File.Exists("serverfiles/" + fM.Path))
+                    // Le modifie
+                    File.WriteAllText("serverfiles/" + fM.Path, fM.Content);
                 else
                 {
-                    // debug log
-                    if (enableDebug)
-                        DebugMessage((DateTime.Now.ToString() + " - [message-send] from " + received_message.Id + " to ") + received_message.ToId == string.Empty ? "everyone" : received_message.ToId + " : " + received_message.Content);
+                    // Créé le dossier et le fichier avant son contenue
+                    Directory.CreateDirectory("serverfiles/" + Path.GetDirectoryName(fM.Path)); // créer dossier
+                    File.WriteAllText("serverfiles/" + fM.Path, fM.Content);
+                }
 
-
-                    // si c'est pour tout le monde ou pour une personne en particulier
-                    if (String.IsNullOrEmpty(received_message.ToId))
+                // Si on veut que les autres clients soit au courant de la modification du fichier
+                if (fM.WarnOtherPeople)
+                {
+                    // envois un message aux autres utilisateurs
+                    foreach (var u in Server.GetAllSessions().ToList())
                     {
-                        foreach (var u in Server.GetAllSessions().ToList())
+                        if (u.SessionID != clientSession.SessionID)
                         {
-                            if (u.SessionID != clientSession.SessionID)
-                            {
-                                if (received_message.ToId == string.Empty || received_message.ToId == u.SessionID) // gère l'envois de tt le monde ou private message
-                                {
-                                    u.Send(message_brute);
+                            // Envois l'information que le fichier a été modifié
+                            // .Content est un objet de type FileMessage contenant le chemin d'accès au fichier + son nouveau contenue
+                            u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, JsonConvert.SerializeObject(new FileMessage(fM.Path, content: fM.Content)), MESSAGE_TYPE.FILE_UPDATED)));
 
-                                    if (enableDebug)
-                                        DebugMessage(DateTime.Now.ToString() + " - [private-message-send] from " + clientSession.SessionID + " to " + u.SessionID + " : " + message_brute);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (Server.GetSessionByID(received_message.ToId).TrySend(message_brute))
-                        {
                             if (enableDebug)
-                                DebugMessage(DateTime.Now.ToString() + " - [private-message] from " + received_message.Id + " to " + received_message.ToId);
-                        }
-                        else
-                        {
-
+                                DebugMessage(DateTime.Now.ToString() + " - " + u.SessionID + " sait que le fichier " + fM.Path + " a été modifié");
                         }
                     }
                 }
+            }
+            // Si le client veut récupérer le contenue d'un fichier du serveur
+            else if (received_message.MessageType == MESSAGE_TYPE.GET_FILE)
+            {
+                // Si le fichier n'existe pas on le créé
+                if (!File.Exists("serverfiles/" + received_message.Content))
+                    File.WriteAllText("serverfiles/" + received_message.Content, "");
+
+                // Récupère le contenue du fichier
+                string content = File.ReadAllText("serverfiles/" + received_message.Content);
+
+                // Renvois le contenu du fichier au client dans un objet FileMessage
+                // fM.Path = fichier
+                // fM.Content = son contenue
+                Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message("server", JsonConvert.SerializeObject(new FileMessage(received_message.Content, content: content)), MESSAGE_TYPE.GET_FILE)));
+
+                if (enableDebug)
+                    DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " a reçu le contenu du fichier ") + received_message.Content);
             }
             else
             {
-                // message brute
                 if (enableDebug)
-                    DebugMessage(DateTime.Now.ToString() + " - [private-brute-message-send] from " + clientSession.SessionID + " to " + message_brute.Split(',').Last().Trim());
-                Server.GetAllSessions().ToList().FirstOrDefault(x => x.SessionID == message_brute.Split(',').Last().Trim()).Send(message_brute);
-            }
+                    DebugMessage((DateTime.Now.ToString() + " - Message envoyé de " + received_message.Id + " à ") + received_message.ToId == string.Empty ? "tout le monde" : received_message.ToId + " : " + received_message.Content);
 
+                // Si c'est pour tout le monde ou pour une personne en particulier
+                if (String.IsNullOrEmpty(received_message.ToId))
+                {
+                    // Pour tout le monde 
+                    foreach (var u in Server.GetAllSessions().ToList())
+                    {
+                        if (u.SessionID != clientSession.SessionID)
+                        {
+                            u.Send(message_brute);
+                        }
+                    }
+                }
+                // Message privé
+                else
+                {
+                    if (!Server.GetSessionByID(received_message.ToId).TrySend(message_brute))
+                    {
+                        // Échoué : l'utilisateur n'est sûrement plus connecté 
+                    }
+                }
+            }
         }
     }
 }

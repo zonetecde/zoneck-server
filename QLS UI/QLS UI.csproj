@@ -71,6 +71,10 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="zck_server, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\zck_server\bin\Debug\zck_server.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -120,12 +124,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\zck_server\zck_server.csproj">
-      <Project>{66a04f51-acc6-4da7-bdd6-c43e6a6654ed}</Project>
-      <Name>zck_server</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icon.png" />

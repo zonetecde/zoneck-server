@@ -61,15 +61,15 @@
 
         public class FileMessage
         {
-            public string path;
-            public string content;
-            public bool warnOtherPeople;
+            public string Path;
+            public string Content;
+            public bool WarnOtherPeople;
 
-            public FileMessage(string path, bool warnOtherPeople, string content = "")
+            public FileMessage(string path, bool warnOtherPeople = false, string content = "")
             {
-                this.path = path;
-                this.warnOtherPeople = warnOtherPeople;
-                this.content = content;
+                this.Path = path;
+                this.WarnOtherPeople = warnOtherPeople;
+                this.Content = content;
             }
         }
     }
