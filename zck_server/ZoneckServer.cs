@@ -212,7 +212,7 @@ namespace sck_server
                             if (u.SessionID != clientSession.SessionID)
                             {
                                 // Envois l'alerte au client 'u' que le fichier a été supprimé
-                                u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, fM.Path, MESSAGE_TYPE.FILE_DELETED)));
+                                u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, fM.Path, MESSAGE_TYPE.FILE_DELETED, args: received_message.Args)));
 
                                 if (enableDebug)
                                     DebugMessage(DateTime.Now.ToString() + " - Le client " + u.SessionID + " sait que " + fM.Path + " a été supprimé");
@@ -228,7 +228,8 @@ namespace sck_server
                 var files = Directory.GetFiles("serverfiles/", "*.*", SearchOption.AllDirectories);
 
                 // Renvois à la personne un objet de type Message contenant la liste des fichiers séparés par une virgule.
-                Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message(received_message.Content, String.Join(",", files).Replace("serverfiles/", string.Empty), MESSAGE_TYPE.LIST_FILE)));
+                Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message(received_message.Content, String.Join(",", files).Replace("serverfiles/", string.Empty), MESSAGE_TYPE.LIST_FILE, 
+                    args: received_message.Args)));
 
                 if (enableDebug)
                     DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " a reçu une liste des fichiers présents sur le serveur"));
@@ -265,7 +266,7 @@ namespace sck_server
                         {
                             // Envois l'information que le fichier a été modifié
                             // .Content est un objet de type FileMessage contenant le chemin d'accès au fichier + son nouveau contenue
-                            u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, JsonConvert.SerializeObject(new FileMessage(fM.Path, content: fM.Content)), MESSAGE_TYPE.FILE_UPDATED)));
+                            u.Send(JsonConvert.SerializeObject(new Message(received_message.Id, JsonConvert.SerializeObject(new FileMessage(fM.Path, content: fM.Content)), MESSAGE_TYPE.FILE_UPDATED, args: received_message.Args)));
 
                             if (enableDebug)
                                 DebugMessage(DateTime.Now.ToString() + " - " + u.SessionID + " sait que le fichier " + fM.Path + " a été modifié");
@@ -286,7 +287,7 @@ namespace sck_server
                 // Renvois le contenu du fichier au client dans un objet FileMessage
                 // fM.Path = fichier
                 // fM.Content = son contenue
-                Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message("server", JsonConvert.SerializeObject(new FileMessage(received_message.Content, content: content)), MESSAGE_TYPE.GET_FILE)));
+                Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message("server", JsonConvert.SerializeObject(new FileMessage(received_message.Content, content: content)), MESSAGE_TYPE.GET_FILE, args:received_message.Args)));
 
                 if (enableDebug)
                     DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " a reçu le contenu du fichier ") + received_message.Content);

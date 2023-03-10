@@ -38,9 +38,9 @@ namespace zck_client
         /// Envois un message à tous ou un utilisateur du serveur
         /// </summary>
         /// <param name="str">Le message à envoyer</param>
-        public void Send(string str, string toId = "")
+        public void Send(string str, string toId = "", string args = "")
         {
-            string msg = JsonConvert.SerializeObject(new Message(MyId, str, MESSAGE_TYPE.MESSAGE, toId)) + "\r\n";
+            string msg = JsonConvert.SerializeObject(new Message(MyId, str, MESSAGE_TYPE.MESSAGE, toId, args: args)) + "\r\n";
 
             var buffter = Encoding.UTF8.GetBytes(msg);
             var temp = SocketClient.Send(buffter);
@@ -51,9 +51,9 @@ namespace zck_client
         /// </summary>
         /// <param name="path">Nom du fichier demandé (ex : folder/file.txt)</param>
         /// <remarks>Le contenue du fichier sera envoyé dans votre fonction MessageReceived. Ce sera un message de type "GET_FILE". Son contenue se trouvera donc dans le msg.Content</remarks>
-        public void GetFile(string path)
+        public void GetFile(string path, string args = "")
         {
-            string msg = JsonConvert.SerializeObject(new Message(MyId, path, MESSAGE_TYPE.GET_FILE)) + "\r\n";
+            string msg = JsonConvert.SerializeObject(new Message(MyId, path, MESSAGE_TYPE.GET_FILE, args: args)) + "\r\n";
 
             var buffter = Encoding.UTF8.GetBytes(msg);
             var temp = SocketClient.Send(buffter);
@@ -77,9 +77,9 @@ namespace zck_client
         /// <param name="path">Chemin du fichier à supprimer</param>
         /// <param name="warnOtherPeople">Prévenir les autres utilisateurs qu'un fichier a été supprimé</param>
         /// <remarks>Si warnOtherPeople est activé, Les personnes connectées au serveur recevrons une alerte envoyé dans leur fonction MessageReceived. Ce sera un message de type "FILE_DELETED". Le chemin d'accès au fichier se trouvera dans msg.Content</remarks>
-        public void DeleteFile(string path, bool warnOtherPeople)
+        public void DeleteFile(string path, bool warnOtherPeople, string args = "")
         {
-            string msg = JsonConvert.SerializeObject(new Message(MyId, JsonConvert.SerializeObject(new FileMessage(path, warnOtherPeople)), MESSAGE_TYPE.FILE_DELETED)) + "\r\n";
+            string msg = JsonConvert.SerializeObject(new Message(MyId, JsonConvert.SerializeObject(new FileMessage(path, warnOtherPeople)), MESSAGE_TYPE.FILE_DELETED, args:args)) + "\r\n";
 
             var buffter = Encoding.UTF8.GetBytes(msg);
             var temp = SocketClient.Send(buffter);
@@ -92,9 +92,9 @@ namespace zck_client
         /// <param name="updatedFileContent">Le nouveau contenue du fichier</param>
         /// <param name="warnOtherPeople">Prévenir les autres utilisateurs qu'un fichier a été modifié</param>
         /// <remarks>Si warnOtherPeople est activé, Les personnes connectées au serveur recevrons une alerte envoyé dans leur fonction MessageReceived. Ce sera un message de type "FILE_UPDATED". Il faudra désérialiser le msg.Content en type "FileMessage". Le chemin d'accès au fichier se trouvera dans fM.Path, et le nouveau contenu dans fM.Content.</remarks>
-        public void UpdateFile(string path, string updatedFileContent, bool warnOtherPeople)
+        public void UpdateFile(string path, string updatedFileContent, bool warnOtherPeople, string args = "")
         {
-            string msg = JsonConvert.SerializeObject(new Message(MyId, JsonConvert.SerializeObject(new FileMessage(path, warnOtherPeople, updatedFileContent)), MESSAGE_TYPE.FILE_UPDATED)) + "\r\n";
+            string msg = JsonConvert.SerializeObject(new Message(MyId, JsonConvert.SerializeObject(new FileMessage(path, warnOtherPeople, updatedFileContent)), MESSAGE_TYPE.FILE_UPDATED, args: args)) + "\r\n";
 
             var buffter = Encoding.UTF8.GetBytes(msg);
             var temp = SocketClient.Send(buffter);
@@ -103,9 +103,9 @@ namespace zck_client
         /// <summary>
         /// Retourne dans un message de type LIST_FILE (dans votre fonction MessageReceived) tous les fichiers du serveur séparé par une virgule.
         /// </summary>
-        public void ListFile()
+        public void ListFile(string args = "")
         {
-            string msg = JsonConvert.SerializeObject(new Message(MyId, "I wanna receive files", MESSAGE_TYPE.LIST_FILE)) + "\r\n";
+            string msg = JsonConvert.SerializeObject(new Message(MyId, args, MESSAGE_TYPE.LIST_FILE, args: args)) + "\r\n";
 
             var buffter = Encoding.UTF8.GetBytes(msg);
             var temp = SocketClient.Send(buffter);
@@ -129,7 +129,6 @@ namespace zck_client
 
                     if (!String.IsNullOrEmpty(message))
                     {
-
                         Message received_message = JsonConvert.DeserializeObject<Message>(message);
 
                         // pour id
@@ -137,8 +136,6 @@ namespace zck_client
                             MyId = received_message.Content;
 
                         Receive(received_message);
-
-
                     }
                 }
                 catch

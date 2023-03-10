@@ -1,4 +1,10 @@
-﻿namespace zck_client
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace zck_client
 {
     public class ClassLibrary
     {
@@ -29,18 +35,19 @@
 
         public class Message
         {
-            public Message(string id, string content, MESSAGE_TYPE messageType, string toId = "")
+            public Message(string id, string content, MESSAGE_TYPE messageType, string toId = "", string args = "")
             {
                 Id = id;
                 Content = content;
                 MessageType = messageType;
                 ToId = toId;
+                Args = args;
             }
 
             public string Id { get; set; }
             public string Content { get; set; }
             public string ToId { get; set; }
-
+            public string Args { get; }
 
             public MESSAGE_TYPE MessageType { get; set; }
         }
@@ -52,9 +59,9 @@
             DISCONNECTION,
             DONNER_ID,
             MESSAGE_BRUTE,
-            FILE_UPDATED,
+            FILE_UPDATED, // au passé, mais c'est car le client lui recevra ceci lorsqu'un fichié a été modifié par un user
             GET_FILE,
-            FILE_DELETED,
+            FILE_DELETED, // au passé, mais c'est car le client lui recevra ceci lorsqu'un fichié a été modifié par un user
             CREATE_FILE,
             LIST_FILE
         }

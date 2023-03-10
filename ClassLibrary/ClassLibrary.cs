@@ -35,18 +35,19 @@ namespace ClassLibrary
 
         public class Message
         {
-            public Message(string id, string content, MESSAGE_TYPE messageType, string toId = "")
+            public Message(string id, string content, MESSAGE_TYPE messageType, string toId = "", string args = "")
             {
                 Id = id;
                 Content = content;
                 MessageType = messageType;
                 ToId = toId;
+                Args = args;
             }
 
             public string Id { get; set; }
             public string Content { get; set; }
             public string ToId { get; set; }
-
+            public string Args { get; }
 
             public MESSAGE_TYPE MessageType { get; set; }
         }
