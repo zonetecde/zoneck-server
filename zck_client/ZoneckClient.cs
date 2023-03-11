@@ -149,6 +149,9 @@ namespace zck_client
 
             Receive -= handler;
 
+            if (String.IsNullOrEmpty(response.Content))
+                return new string[0];
+
             return response.Content.Split(',');
         }
 
