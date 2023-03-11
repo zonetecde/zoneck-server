@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "QLS Zoneck"
-#define MyAppVersion "1.0.8"
+#define MyAppVersion "1.0.9"
 #define MyAppPublisher "zonetecde"
 #define MyAppURL "github.com/zonetecde/zoneck-server"
 #define MyAppExeName "QLS UI.exe"

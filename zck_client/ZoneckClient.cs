@@ -177,8 +177,7 @@ namespace zck_client
                         if (received_message.MessageType == MESSAGE_TYPE.DONNER_ID)
                             MyId = received_message.Content;
                         
-                        if(received_message.MessageType != MESSAGE_TYPE.GET_FILE && received_message.MessageType != MESSAGE_TYPE.LIST_FILE)           
-                            Receive(received_message);
+                        Receive(received_message);
                     }
                 }
                 catch
