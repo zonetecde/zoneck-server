@@ -233,7 +233,8 @@ namespace sck_server
                 // Renvois à la personne un objet de type Message contenant la liste des fichiers séparés par une virgule.
                 Message msg = new Message(received_message.Content, String.Join(",", files).Replace("serverfiles/", string.Empty), MESSAGE_TYPE.LIST_FILE,
                     args: received_message.Args);
-                Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(msg));
+
+                Server.GetSessionByID(received_message.Id).Send(JsonConvert.SerializeObject(msg));
 
                 if (enableDebug)
                     DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " a reçu une liste des fichiers présents sur le serveur"));
@@ -283,7 +284,10 @@ namespace sck_server
             {
                 // Si le fichier n'existe pas on le créé
                 if (!File.Exists("serverfiles/" + received_message.Content))
+                {
+                    Directory.CreateDirectory("serverfiles/" + Path.GetDirectoryName(received_message.Content));
                     File.WriteAllText("serverfiles/" + received_message.Content, "");
+                }
 
                 // Récupère le contenue du fichier
                 string content = File.ReadAllText("serverfiles/" + received_message.Content);

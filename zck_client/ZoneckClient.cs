@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using static zck_client.ClassLibrary;
 
 namespace zck_client
@@ -12,7 +14,7 @@ namespace zck_client
     {
         private Socket SocketClient { get; set; }
         public string MyId { get; set; }
-        internal Action<Message> Receive { get; }
+        internal Action<Message> Receive { get; set; }
 
         public ZoneckClient(string appName, string ip, int port, Action<Message> Receive)
         {
@@ -50,13 +52,32 @@ namespace zck_client
         /// Demande le contenue d'un fichier stocké sur le serveur
         /// </summary>
         /// <param name="path">Nom du fichier demandé (ex : folder/file.txt)</param>
-        /// <remarks>Le contenue du fichier sera envoyé dans votre fonction MessageReceived. Ce sera un message de type "GET_FILE". Son contenue se trouvera donc dans le msg.Content</remarks>
-        public void GetFile(string path, string args = "")
+        public string GetFileContent(string path)
         {
-            string msg = JsonConvert.SerializeObject(new Message(MyId, path, MESSAGE_TYPE.GET_FILE, args: args)) + "\r\n";
+            var waitHandle = new AutoResetEvent(false);
+
+            Message response = null;
+            void handler(Message message)
+            {
+                if (message.MessageType == MESSAGE_TYPE.GET_FILE)
+                {
+                    response = message;
+                    waitHandle.Set();
+                }
+            }
+
+            Receive += handler;
+
+            string msg = JsonConvert.SerializeObject(new Message(MyId, path, MESSAGE_TYPE.GET_FILE, args: string.Empty)) + "\r\n";
 
             var buffter = Encoding.UTF8.GetBytes(msg);
             var temp = SocketClient.Send(buffter);
+
+            waitHandle.WaitOne();
+
+            Receive -= handler;
+
+            return JsonConvert.DeserializeObject<Message>(response.Content).Content;
         }
 
         /// <summary>
@@ -101,15 +122,36 @@ namespace zck_client
         }
 
         /// <summary>
-        /// Retourne dans un message de type LIST_FILE (dans votre fonction MessageReceived) tous les fichiers du serveur séparé par une virgule.
+        /// Récupère la liste des fichiers présent sur le serveur
         /// </summary>
-        public void ListFile(string args = "")
+        /// <returns>Un array de string comportant les fichiers présent sur le serveur</returns>
+        public string[] ListFile()
         {
-            string msg = JsonConvert.SerializeObject(new Message(MyId, args, MESSAGE_TYPE.LIST_FILE, args: args)) + "\r\n";
+            var waitHandle = new AutoResetEvent(false);
 
-            var buffter = Encoding.UTF8.GetBytes(msg);
-            var temp = SocketClient.Send(buffter);
+            Message response = null;
+            void handler(Message message)
+            {
+                if (message.MessageType == MESSAGE_TYPE.LIST_FILE)
+                {
+                    response = message;
+                    waitHandle.Set();
+                }
+            }
+
+            Receive += handler;
+
+            string msg = JsonConvert.SerializeObject(new Message(MyId, string.Empty, MESSAGE_TYPE.LIST_FILE, args: string.Empty)) + "\r\n";
+            var buffer = Encoding.UTF8.GetBytes(msg);
+            var temp = SocketClient.Send(buffer);
+
+            waitHandle.WaitOne();
+
+            Receive -= handler;
+
+            return response.Content.Split(',');
         }
+
 
         /// <summary>
         /// Reçois un message du serveur
@@ -134,8 +176,9 @@ namespace zck_client
                         // pour id
                         if (received_message.MessageType == MESSAGE_TYPE.DONNER_ID)
                             MyId = received_message.Content;
-
-                        Receive(received_message);
+                        
+                        if(received_message.MessageType != MESSAGE_TYPE.GET_FILE && received_message.MessageType != MESSAGE_TYPE.LIST_FILE)           
+                            Receive(received_message);
                     }
                 }
                 catch
@@ -143,5 +186,6 @@ namespace zck_client
 
             }
         }
+
     }
 }
