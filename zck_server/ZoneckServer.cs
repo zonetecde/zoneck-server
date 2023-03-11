@@ -225,11 +225,15 @@ namespace sck_server
             else if (received_message.MessageType == MESSAGE_TYPE.LIST_FILE)
             {
                 // Liste tous les fichiers du serveur créé par les clients
+                if (!Directory.Exists("serverfiles/"))
+                    Directory.CreateDirectory("serverfiles/");
+
                 var files = Directory.GetFiles("serverfiles/", "*.*", SearchOption.AllDirectories);
 
                 // Renvois à la personne un objet de type Message contenant la liste des fichiers séparés par une virgule.
-                Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(new Message(received_message.Content, String.Join(",", files).Replace("serverfiles/", string.Empty), MESSAGE_TYPE.LIST_FILE, 
-                    args: received_message.Args)));
+                Message msg = new Message(received_message.Content, String.Join(",", files).Replace("serverfiles/", string.Empty), MESSAGE_TYPE.LIST_FILE,
+                    args: received_message.Args);
+                Server.GetSessionByID(received_message.Id).TrySend(JsonConvert.SerializeObject(msg));
 
                 if (enableDebug)
                     DebugMessage((DateTime.Now.ToString() + " - " + received_message.Id + " a reçu une liste des fichiers présents sur le serveur"));
